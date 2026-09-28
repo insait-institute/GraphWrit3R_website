@@ -292,12 +292,12 @@ h1, h2, h3 { font-weight: 600; line-height: 1.2; }
   gap: 1.5rem 2.5rem;
 }
 .logos img { width: auto; }
-.logo-insait { height: 64px; }
+.logo-insait { height: 56px; }
 .logo-stanford { height: 96px; }
 .logo-ulm { height: 56px; }
 
-/* The paper, the code and the weights are peers: three equal buttons,
-   no primary/secondary pair. */
+/* The paper, the code, the weights and the citation are peers: four
+   equal-width buttons (sized to arXiv), no primary/secondary pair. */
 .links {
   margin-top: 2rem;
   display: flex;
@@ -309,8 +309,10 @@ h1, h2, h3 { font-weight: 600; line-height: 1.2; }
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: .5rem;
-  padding: .625rem 1.125rem;
+  width: 6rem;
+  padding: .625rem .5rem;
   background: var(--plate);
   border: 1px solid var(--rule-strong);
   border-radius: var(--radius-ctl);
@@ -322,6 +324,42 @@ h1, h2, h3 { font-weight: 600; line-height: 1.2; }
 .btn:hover { background: var(--glacier); border-color: var(--accent); color: var(--accent-deep); }
 .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn svg { width: 1rem; height: 1rem; color: var(--accent); }
+
+/* Cite copies the BibTeX. On success the quote mark spins out, a check
+   draws itself in, the label slides to "Copied!" and a ring pulses out.
+   Only the active label is in flow, so each state stays centred; the
+   other is lifted out and overlaid while it fades. */
+.btn-cite__icon { display: inline-grid; }
+.btn-cite__icon > svg { grid-area: 1 / 1; }
+.btn-cite__label { position: relative; }
+
+.btn-cite__icon > svg { transition: opacity .2s var(--ease), transform .3s var(--ease); }
+.btn-cite__check { opacity: 0; transform: scale(.4); }
+.btn-cite__check path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  transition: stroke-dashoffset .35s var(--ease) .1s;
+}
+
+.btn-cite__label > span { transition: opacity .2s var(--ease), transform .25s var(--ease); }
+.btn-cite__done { position: absolute; left: 0; top: 0; opacity: 0; transform: translateY(.4em); }
+
+.btn-cite.is-copied {
+  background: var(--glacier);
+  border-color: var(--accent);
+  color: var(--accent-deep);
+  animation: cite-pulse .6s var(--ease);
+}
+.btn-cite.is-copied .btn-cite__quote { opacity: 0; transform: scale(.4) rotate(-90deg); }
+.btn-cite.is-copied .btn-cite__check { opacity: 1; transform: scale(1); }
+.btn-cite.is-copied .btn-cite__check path { stroke-dashoffset: 0; }
+.btn-cite.is-copied .btn-cite__idle { position: absolute; left: 0; top: 0; opacity: 0; transform: translateY(-.4em); }
+.btn-cite.is-copied .btn-cite__done { position: static; opacity: 1; transform: none; }
+
+@keyframes cite-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(56, 97, 177, .45); }
+  100% { box-shadow: 0 0 0 .75rem rgba(56, 97, 177, 0); }
+}
 
 /* --- TL;DR ---------------------------------------------------------------- */
 /* Same box as the original site: one grey panel, a bold title, a bullet
@@ -477,7 +515,7 @@ h1, h2, h3 { font-weight: 600; line-height: 1.2; }
 
   .prose { text-align: left; }
   .logos { gap: 1.25rem 1.75rem; }
-  .logo-insait { height: 48px; }
+  .logo-insait { height: 42px; }
   .logo-stanford { height: 70px; }
   .logo-ulm { height: 46px; }
   .tldr-box { padding: 1.25rem; }
@@ -494,6 +532,11 @@ h1, h2, h3 { font-weight: 600; line-height: 1.2; }
   .fig1-build { width: 720px; min-height: 209px; }
 }
 
+/* Four fixed-width buttons don't fit one row on phones: go 2 x 2. */
+@media (max-width: 480px) {
+  .links { max-width: calc(12rem + .75rem); margin-inline: auto; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .fig1-build > img.fig1-build-piece {
@@ -502,4 +545,8 @@ h1, h2, h3 { font-weight: 600; line-height: 1.2; }
     transform: none;
     clip-path: none;
   }
+  .btn-cite.is-copied { animation: none; }
+  .btn-cite__icon > svg,
+  .btn-cite__check path,
+  .btn-cite__label > span { transition: none; }
 }
