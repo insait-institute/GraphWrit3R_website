@@ -1,0 +1,505 @@
+/* ==========================================================================
+   GraphWrit3R — "Signature"
+   Palette "cobalt ink on cold paper": sea-graphite neutrals (hue ~206, off
+   every stock grey scale), one cobalt accent cut from the teaser figure's
+   own blue (#6B8FCA), and a page-long glacier -> frost wash in place of
+   alternating bands.
+   Type: Onest for all text, IBM Plex Mono for code. One 1.125 modular
+   scale, two weights (400/600), sentence case throughout.
+   Layout: everything centred on one axis, like a paper's title block. The
+   TL;DR is one grey box as on the original site; figures sit on white
+   fields that fade into the wash instead of on cards. 150ms colour-only
+   motion.
+   ========================================================================== */
+
+/* --- fonts ---------------------------------------------------------------- */
+/* Self-hosted, SIL OFL 1.1 (licences in static/fonts/). Onest is one variable
+   file per subset covering every weight; IBM Plex Mono is for code only.
+   Latin and Latin Extended subsets; the browser fetches a subset only when
+   the page uses a character from it. */
+@font-face { font-family: 'Onest'; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url('../static/fonts/onest-latin-wght-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Onest'; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url('../static/fonts/onest-latin-ext-wght-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../static/fonts/ibm-plex-mono-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../static/fonts/ibm-plex-mono-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+
+/* --- reset ---------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+img, svg { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+a { color: inherit; text-decoration: inherit; }
+
+/* --- tokens --------------------------------------------------------------- */
+:root {
+  /* cobalt ink — 5.9:1 on paper; white on it 6.0:1 */
+  --accent: #3861b1;
+  --accent-deep: #2a4a92;
+
+  /* paper and page washes */
+  --paper: #fafefe;
+  --glacier: #e8f5ff;
+  --frost: #e9f9f8;
+  --plate: #ffffff;
+
+  /* sea-graphite ink, darkest to lightest */
+  --ink: #102628;
+  --ink-2: #27393b;
+  --ink-3: #4a5f62;
+  --rule: #d9e6e7;
+  --rule-strong: #c1d3d6;
+
+  --header-bg: rgba(250, 254, 254, .82);
+  --selection: rgba(56, 97, 177, .16);
+
+  /* hero grid, the site's signature: 42px cells of single 1px lines (as on
+     nikolapopovic.com), drawn in cobalt ink */
+  --grid-line: rgba(56, 97, 177, .07);
+  --grid-cell: 42px;
+
+  /* boxes (TL;DR, BibTeX) and controls; the box values are the original site's */
+  --box: #f5f5f5;
+  --box-shadow: 0 4px 12px rgba(16, 38, 40, .05);
+  --radius-box: 12px;
+  --radius-ctl: 10px;
+  --radius-sm: 7px;
+
+  --font-sans: 'Onest', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', Menlo, Consolas, monospace;
+
+  /* modular scale, 16px base, ratio 1.125; only the steps in use */
+  --step--3: .702rem;
+  --step--2: .79rem;
+  --step--1: .889rem;
+  --step-0: 1rem;
+  --step-1: 1.125rem;
+  --step-2: 1.266rem;
+  --step-4: 1.602rem;
+  --step-6: 2.027rem;
+  --step-10: 3.247rem;
+
+  --fade: 3rem;
+  --fade-x: clamp(1rem, 7vw, 6rem);
+  --content: 64rem;
+  --measure: 46rem;
+  --ease: cubic-bezier(.4, 0, .2, 1);
+}
+
+/* --- base ----------------------------------------------------------------- */
+html { scroll-behavior: smooth; }
+
+/* One slow wash down the whole page — paper, into glacier blue, across to
+   frost aqua, back to paper — instead of hard-edged alternating bands. The
+   gradient is sized to the document, so it drifts rather than stripes. */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--paper);
+  background-image: linear-gradient(180deg,
+    var(--paper) 0%,
+    var(--paper) 7%,
+    var(--glacier) 22%,
+    var(--frost) 48%,
+    var(--glacier) 74%,
+    var(--paper) 94%);
+  color: var(--ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--selection); color: var(--ink); }
+
+main { overflow-x: clip; }
+
+section[id] { scroll-margin-top: 5rem; }
+
+.wrap {
+  max-width: var(--content);
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+.band { padding-block: 4rem; }
+
+h1, h2, h3 { font-weight: 600; line-height: 1.2; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.section-title {
+  font-size: var(--step-4);
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.prose {
+  max-width: var(--measure);
+  margin-inline: auto;
+  font-size: var(--step-0);
+  line-height: 1.65;
+  color: var(--ink-2);
+  text-align: justify;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+.prose p + p { margin-top: 1rem; }
+.prose strong { color: var(--ink); font-weight: 600; }
+
+/* --- skip link ------------------------------------------------------------ */
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: .5rem 1rem;
+  background: var(--accent);
+  color: #fff;
+  font-size: var(--step--1);
+  font-weight: 600;
+  border-radius: .5rem;
+}
+.skip:focus { left: 1rem; top: 1rem; }
+
+/* --- header --------------------------------------------------------------- */
+.header {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 50;
+  height: 4rem;
+  background: var(--header-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule);
+}
+
+.header__inner {
+  max-width: var(--content);
+  height: 100%;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.wordmark { font-size: var(--step-0); font-weight: 600; white-space: nowrap; }
+
+.nav { display: flex; align-items: center; gap: 1.75rem; font-size: var(--step--1); }
+.nav a { color: var(--ink-3); transition: color .15s var(--ease); }
+.nav a:hover { color: var(--accent); }
+.nav a.active { color: var(--accent); font-weight: 600; }
+
+/* --- hero ----------------------------------------------------------------- */
+.hero {
+  position: relative;
+  isolation: isolate;
+  padding-top: 7rem;
+  padding-bottom: 3rem;
+  text-align: center;
+}
+/* The signature grid behind the title block: plain 42px squares, one line
+   weight, no subdivisions. A line runs down the page's centre axis, so the
+   centred layout sits on the grid, and it fades straight down into the
+   wash: no spotlight mask, no glow. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-cell) var(--grid-cell);
+  /* a percentage position centres each tile on the axis; shift by half a
+     tile so a line, not a cell middle, starts there (whole pixels, crisp) */
+  background-position: calc(50% + var(--grid-cell) / 2) 0;
+  -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent);
+  mask-image: linear-gradient(to bottom, #000 45%, transparent);
+}
+
+/* One h1 holds the full paper title: the name at display size, the rest of
+   the official title beneath it in regular weight. */
+.hero__name {
+  display: block;
+  font-size: clamp(var(--step-6), 6.5vw, var(--step-10));
+  line-height: 1.1;
+  letter-spacing: -.01em;
+}
+
+.hero__subtitle {
+  display: block;
+  margin-top: .75rem;
+  font-size: clamp(var(--step-2), 2.8vw, var(--step-4));
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.authors {
+  margin-top: 1.5rem;
+  font-size: clamp(var(--step-0), 2vw, var(--step-2));
+  color: var(--ink-2);
+  line-height: 1.7;
+  text-wrap: balance;
+}
+.authors a { color: var(--accent); transition: color .15s var(--ease); }
+.authors a:hover { color: var(--accent-deep); }
+.authors sup { font-size: .7em; }
+
+.affiliations {
+  margin-top: .75rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .25rem 1.5rem;
+  font-size: clamp(var(--step--1), 1.6vw, var(--step-1));
+  color: var(--ink-3);
+}
+
+/* "†Project lead" sits midway between the affiliations and the logos: the
+   two margins give equal ~30px gaps between the letters and the logo ink
+   (the logo images carry some transparent padding of their own). */
+.author-note {
+  margin-top: 1.125rem;
+  font-size: clamp(var(--step--1), 1.6vw, var(--step-1));
+  color: var(--ink-3);
+}
+
+.logos {
+  margin-top: .5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem 2.5rem;
+}
+.logos img { width: auto; }
+.logo-insait { height: 64px; }
+.logo-stanford { height: 96px; }
+.logo-ulm { height: 56px; }
+
+/* The paper, the code and the weights are peers: three equal buttons,
+   no primary/secondary pair. */
+.links {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .625rem 1.125rem;
+  background: var(--plate);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-ctl);
+  font-size: var(--step--1);
+  font-weight: 600;
+  color: var(--ink);
+  transition: color .15s var(--ease), background-color .15s var(--ease), border-color .15s var(--ease);
+}
+.btn:hover { background: var(--glacier); border-color: var(--accent); color: var(--accent-deep); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn svg { width: 1rem; height: 1rem; color: var(--accent); }
+
+/* --- TL;DR ---------------------------------------------------------------- */
+/* Same box as the original site: one grey panel, a bold title, a bullet
+   list with run-in bold leads. Left-aligned inside, centred on the page. */
+.band.band--tldr { padding-block: 0 1rem; }
+.band.band--teaser { padding-top: calc(var(--fade) + 1rem); }
+
+.tldr-box {
+  background: var(--box);
+  border-radius: var(--radius-box);
+  padding: 1.5rem;
+  box-shadow: var(--box-shadow);
+  line-height: 1.6;
+}
+.tldr-box h2 { font-size: var(--step-2); margin-bottom: .75rem; color: var(--ink); }
+.tldr-box ul { padding-left: 1.2rem; list-style-type: disc; color: var(--ink-2); }
+.tldr-box strong { color: var(--ink); font-weight: 600; }
+
+/* --- figures -------------------------------------------------------------- */
+/* The paper figures are transparent drawings made for white paper. Rather
+   than put each on a card, the page turns white behind them: a pool of
+   white that is solid under the figure and fades into the wash on all four
+   sides (--fade above and below, --fade-x at the sides), so the gradient
+   stays continuous down the page edges. */
+.figure { position: relative; isolation: isolate; }
+.figure::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: calc(-1 * var(--fade)) calc(-1 * var(--fade-x));
+  background: var(--plate);
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 var(--fade-x), #000 calc(100% - var(--fade-x)), transparent),
+    linear-gradient(to bottom, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 var(--fade-x), #000 calc(100% - var(--fade-x)), transparent),
+    linear-gradient(to bottom, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent);
+  mask-composite: intersect;
+  pointer-events: none;
+}
+.figure img { width: 100%; height: auto; }
+.figure + .prose { margin-top: 2.25rem; }
+
+/* --- teaser animation ----------------------------------------------------- */
+/* Geometry, delays and easing come from the original page; the layer
+   percentages are what keep the six pieces in register. The original frame
+   also held a row of claims below the figure; that strip is cut, so every
+   vertical value is the original divided by 0.8848 (the figure's share of
+   the old frame). */
+.fig1-scroll { width: 100%; overflow-x: visible; overflow-y: hidden; }
+
+.fig1-build {
+  position: relative;
+  display: block;
+  width: min(100%, 1083px);
+  aspect-ratio: 1083 / 315;
+  margin: 0 auto;
+  overflow: hidden;
+  min-height: 115px;
+  isolation: isolate;
+}
+
+.fig1-build > img.fig1-build-piece {
+  position: absolute;
+  display: block;
+  width: var(--fig1-width) !important;
+  height: var(--fig1-height) !important;
+  max-width: none !important;
+  opacity: 0;
+  object-fit: fill;
+  transform: translate(var(--fig1-from-x, 0), var(--fig1-from-y, 0)) scale(0.985);
+  transform-origin: center;
+  animation: fig1-slide-in 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--fig1-delay, 0s);
+  will-change: opacity, transform, clip-path;
+}
+
+.fig1-input      { left: 0;       top: 0;      --fig1-width: 15.78%; --fig1-height: 100%; --fig1-delay: 0.05s; --fig1-from-x: -0.7rem; }
+.fig1-tokenizer  { left: 13.56%;  top: 13.34%; --fig1-width: 11.04%; --fig1-height: 73.24%; z-index: 2; --fig1-delay: 0.75s; --fig1-from-x: -0.55rem; }
+.fig1-tokens     { left: 22.35%;  top: 13.34%; --fig1-width: 10.16%; --fig1-height: 73.01%; z-index: 3; --fig1-delay: 1.45s; --fig1-from-y: 0.55rem; }
+.fig1-llm        { left: 29.41%;  top: 13.34%; --fig1-width: 11.14%; --fig1-height: 73.21%; z-index: 4; --fig1-delay: 2.15s; --fig1-from-x: 0.55rem; }
+.fig1-model-box  { left: 19.85%;  top: 0;      --fig1-width: 21.63%; --fig1-height: 100%;   z-index: 1; --fig1-delay: 2.85s; --fig1-from-y: -0.55rem; }
+.fig1-output     { left: 38.41%;  top: 0;      --fig1-width: 61.74%; --fig1-height: 100%;   z-index: 5; --fig1-delay: 3.55s; --fig1-from-x: 0.7rem; }
+
+
+@keyframes fig1-slide-in {
+  0%   { opacity: 0; clip-path: inset(0 8% 0 0); transform: translate(var(--fig1-from-x, 0), var(--fig1-from-y, 0)) scale(0.985); }
+  70%  { opacity: 1; }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); transform: translate(0, 0) scale(1); }
+}
+
+/* --- bibtex --------------------------------------------------------------- */
+.bibtex-wrap { position: relative; }
+
+.bibtex-wrap pre {
+  overflow-x: auto;
+  background: var(--box);
+  border-radius: var(--radius-box);
+  box-shadow: var(--box-shadow);
+  padding: 1rem 1.5rem;
+  padding-top: 2.5rem;
+  font-size: var(--step--2);
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.bibtex-wrap code {
+  font-family: var(--font-mono);
+}
+
+.copy-btn {
+  position: absolute;
+  right: .5rem;
+  top: .5rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  background: var(--plate);
+  padding: .25rem .5rem;
+  font-size: var(--step--3);
+  color: var(--ink-3);
+  transition: color .15s var(--ease), border-color .15s var(--ease);
+}
+.copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+/* --- footer --------------------------------------------------------------- */
+.footer {
+  border-top: 1px solid var(--rule);
+  padding-block: 2rem;
+  text-align: center;
+}
+.footer p { font-size: var(--step--1); color: var(--ink-3); max-width: 42rem; margin-inline: auto; }
+.footer a { color: var(--accent); }
+.footer a:hover { color: var(--accent-deep); }
+
+/* --- responsive ----------------------------------------------------------- */
+@media (min-width: 640px) {
+  .wrap, .header__inner { padding-inline: 1.5rem; }
+  .band { padding-block: 5rem; }
+  .hero { padding-top: 7.5rem; }
+}
+
+@media (max-width: 768px) {
+  .nav { display: none; }
+
+  .fig1-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-inline: 1rem;
+    padding-bottom: 0.75rem;
+  }
+  .fig1-build { width: 760px; max-width: none; min-height: 221px; }
+
+  .prose { text-align: left; }
+  .logos { gap: 1.25rem 1.75rem; }
+  .logo-insait { height: 48px; }
+  .logo-stanford { height: 70px; }
+  .logo-ulm { height: 46px; }
+  .tldr-box { padding: 1.25rem; }
+  .tldr-box ul { padding-left: 1rem; }
+}
+
+/* Authors run 4 + 3 on two lines; below 640px four names no longer fit on
+   one line, so the break is dropped and the list wraps evenly on its own. */
+@media (max-width: 639px) {
+  .authors__break { display: none; }
+}
+
+@media (max-width: 420px) {
+  .fig1-build { width: 720px; min-height: 209px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .fig1-build > img.fig1-build-piece {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+  }
+}
