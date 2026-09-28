@@ -419,7 +419,6 @@ h1, h2, h3 { font-weight: 600; line-height: 1.2; }
   aspect-ratio: 1083 / 315;
   margin: 0 auto;
   overflow: hidden;
-  min-height: 115px;
   isolation: isolate;
 }
 
@@ -504,15 +503,6 @@ h1, h2, h3 { font-weight: 600; line-height: 1.2; }
 @media (max-width: 768px) {
   .nav { display: none; }
 
-  .fig1-scroll {
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    padding-inline: 1rem;
-    padding-bottom: 0.75rem;
-  }
-  .fig1-build { width: 760px; max-width: none; min-height: 221px; }
-
   .prose { text-align: left; }
   .logos { gap: 1.25rem 1.75rem; }
   .logo-insait { height: 42px; }
@@ -526,10 +516,6 @@ h1, h2, h3 { font-weight: 600; line-height: 1.2; }
    one line, so the break is dropped and the list wraps evenly on its own. */
 @media (max-width: 639px) {
   .authors__break { display: none; }
-}
-
-@media (max-width: 420px) {
-  .fig1-build { width: 720px; min-height: 209px; }
 }
 
 /* Four fixed-width buttons don't fit one row on phones: go 2 x 2. */
